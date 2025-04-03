@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35913.81 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplicationEventology", "WebApplicationEventology\WebApplicationEventology.csproj", "{437F88DB-5655-45AF-9423-6C3B64F271C4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{437F88DB-5655-45AF-9423-6C3B64F271C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{437F88DB-5655-45AF-9423-6C3B64F271C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{437F88DB-5655-45AF-9423-6C3B64F271C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{437F88DB-5655-45AF-9423-6C3B64F271C4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9D1076D2-736F-4A4D-844B-1FB082E148AA}
+	EndGlobalSection
+EndGlobal
