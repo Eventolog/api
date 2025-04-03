@@ -23,7 +23,7 @@ This repository contains the **REST API** for **Eventology**, the cultural event
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Eventology/api.git
+   git clone https://github.com/Eventolog/api.git
    ```
 2. Open the solution in **Visual Studio**.
 3. Configure your `appsettings.json` for database connection and JWT settings.
