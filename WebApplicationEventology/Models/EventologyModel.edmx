@@ -1,0 +1,1020 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="eventologyModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="chatrooms">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="user1_id" Type="int" Nullable="false" />
+          <Property Name="user2_id" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="events">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="description" Type="nvarchar(max)" />
+          <Property Name="if_full_day" Type="bit" />
+          <Property Name="start_time" Type="datetime" Nullable="false" />
+          <Property Name="end_time" Type="datetime" Nullable="false" />
+          <Property Name="status" Type="nvarchar" MaxLength="20" />
+          <Property Name="created_at" Type="datetime" />
+          <Property Name="organizer_id" Type="int" Nullable="false" />
+          <Property Name="room_id" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="incidences">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="reason" Type="nvarchar" MaxLength="500" Nullable="false" />
+          <Property Name="status" Type="nvarchar" MaxLength="20" />
+          <Property Name="normal_user_id" Type="int" Nullable="false" />
+          <Property Name="solver_user_id" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="incidences_tickets">
+          <Key>
+            <PropertyRef Name="ticket_id" />
+            <PropertyRef Name="incidence_id" />
+          </Key>
+          <Property Name="ticket_id" Type="int" Nullable="false" />
+          <Property Name="incidence_id" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="inventory_items">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="description" Type="nvarchar" MaxLength="500" />
+        </EntityType>
+        <EntityType Name="inventory_rooms">
+          <Key>
+            <PropertyRef Name="room_id" />
+            <PropertyRef Name="inventory_id" />
+          </Key>
+          <Property Name="room_id" Type="int" Nullable="false" />
+          <Property Name="inventory_id" Type="int" Nullable="false" />
+          <Property Name="quantity" Type="int" />
+        </EntityType>
+        <EntityType Name="media">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="path" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="event_id" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="messages">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="content" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="date" Type="datetime" />
+          <Property Name="status" Type="nvarchar" MaxLength="20" />
+          <Property Name="sender_id" Type="int" Nullable="false" />
+          <Property Name="chat_id" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="rooms">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="capacity" Type="int" />
+          <Property Name="description" Type="nvarchar" MaxLength="500" />
+        </EntityType>
+        <EntityType Name="seats">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="row_number" Type="int" Nullable="false" />
+          <Property Name="seat_number" Type="int" Nullable="false" />
+          <Property Name="room_id" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tickets">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="reservation" Type="datetime" />
+          <Property Name="status" Type="nvarchar" MaxLength="20" />
+          <Property Name="buyer_id" Type="int" Nullable="false" />
+          <Property Name="event_id" Type="int" Nullable="false" />
+          <Property Name="seat_id" Type="int" />
+        </EntityType>
+        <EntityType Name="users">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="email" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="password" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="type" Type="nvarchar" MaxLength="20" />
+        </EntityType>
+        <Association Name="fk_chatrooms_user1">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="chatrooms" Type="Self.chatrooms" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="chatrooms">
+              <PropertyRef Name="user1_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_chatrooms_user2">
+          <End Role="users" Type="Self.users" Multiplicity="1" />
+          <End Role="chatrooms" Type="Self.chatrooms" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="chatrooms">
+              <PropertyRef Name="user2_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_events_organizer">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="events" Type="Self.events" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="events">
+              <PropertyRef Name="organizer_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_events_room">
+          <End Role="rooms" Type="Self.rooms" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="events" Type="Self.events" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="rooms">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="events">
+              <PropertyRef Name="room_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_incidences_normal_user">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="incidences" Type="Self.incidences" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="incidences">
+              <PropertyRef Name="normal_user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_incidences_solver_user">
+          <End Role="users" Type="Self.users" Multiplicity="1" />
+          <End Role="incidences" Type="Self.incidences" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="incidences">
+              <PropertyRef Name="solver_user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_incidences_tickets">
+          <End Role="incidences" Type="Self.incidences" Multiplicity="1" />
+          <End Role="incidences_tickets" Type="Self.incidences_tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="incidences">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="incidences_tickets">
+              <PropertyRef Name="incidence_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_inventory_rooms">
+          <End Role="rooms" Type="Self.rooms" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="inventory_rooms" Type="Self.inventory_rooms" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="rooms">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventory_rooms">
+              <PropertyRef Name="room_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_media_event">
+          <End Role="events" Type="Self.events" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="media" Type="Self.media" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="events">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="media">
+              <PropertyRef Name="event_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_messages_chat">
+          <End Role="chatrooms" Type="Self.chatrooms" Multiplicity="1" />
+          <End Role="messages" Type="Self.messages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="chatrooms">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="messages">
+              <PropertyRef Name="chat_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_messages_sender">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="messages" Type="Self.messages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="messages">
+              <PropertyRef Name="sender_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_rooms_inventory">
+          <End Role="inventory_items" Type="Self.inventory_items" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="inventory_rooms" Type="Self.inventory_rooms" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="inventory_items">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventory_rooms">
+              <PropertyRef Name="inventory_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_seats_room">
+          <End Role="rooms" Type="Self.rooms" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="seats" Type="Self.seats" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="rooms">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="seats">
+              <PropertyRef Name="room_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_tickets_buyer">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="tickets" Type="Self.tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tickets">
+              <PropertyRef Name="buyer_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_tickets_event">
+          <End Role="events" Type="Self.events" Multiplicity="1" />
+          <End Role="tickets" Type="Self.tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="events">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tickets">
+              <PropertyRef Name="event_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_tickets_incidences">
+          <End Role="tickets" Type="Self.tickets" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="incidences_tickets" Type="Self.incidences_tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tickets">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="incidences_tickets">
+              <PropertyRef Name="ticket_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_tickets_seat">
+          <End Role="seats" Type="Self.seats" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="tickets" Type="Self.tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="seats">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tickets">
+              <PropertyRef Name="seat_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="eventologyModelStoreContainer">
+          <EntitySet Name="chatrooms" EntityType="Self.chatrooms" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="events" EntityType="Self.events" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="incidences" EntityType="Self.incidences" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="incidences_tickets" EntityType="Self.incidences_tickets" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="inventory_items" EntityType="Self.inventory_items" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="inventory_rooms" EntityType="Self.inventory_rooms" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="media" EntityType="Self.media" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="messages" EntityType="Self.messages" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="rooms" EntityType="Self.rooms" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="seats" EntityType="Self.seats" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tickets" EntityType="Self.tickets" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="users" EntityType="Self.users" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="fk_chatrooms_user1" Association="Self.fk_chatrooms_user1">
+            <End Role="users" EntitySet="users" />
+            <End Role="chatrooms" EntitySet="chatrooms" />
+          </AssociationSet>
+          <AssociationSet Name="fk_chatrooms_user2" Association="Self.fk_chatrooms_user2">
+            <End Role="users" EntitySet="users" />
+            <End Role="chatrooms" EntitySet="chatrooms" />
+          </AssociationSet>
+          <AssociationSet Name="fk_events_organizer" Association="Self.fk_events_organizer">
+            <End Role="users" EntitySet="users" />
+            <End Role="events" EntitySet="events" />
+          </AssociationSet>
+          <AssociationSet Name="fk_events_room" Association="Self.fk_events_room">
+            <End Role="rooms" EntitySet="rooms" />
+            <End Role="events" EntitySet="events" />
+          </AssociationSet>
+          <AssociationSet Name="fk_incidences_normal_user" Association="Self.fk_incidences_normal_user">
+            <End Role="users" EntitySet="users" />
+            <End Role="incidences" EntitySet="incidences" />
+          </AssociationSet>
+          <AssociationSet Name="fk_incidences_solver_user" Association="Self.fk_incidences_solver_user">
+            <End Role="users" EntitySet="users" />
+            <End Role="incidences" EntitySet="incidences" />
+          </AssociationSet>
+          <AssociationSet Name="fk_incidences_tickets" Association="Self.fk_incidences_tickets">
+            <End Role="incidences" EntitySet="incidences" />
+            <End Role="incidences_tickets" EntitySet="incidences_tickets" />
+          </AssociationSet>
+          <AssociationSet Name="fk_inventory_rooms" Association="Self.fk_inventory_rooms">
+            <End Role="rooms" EntitySet="rooms" />
+            <End Role="inventory_rooms" EntitySet="inventory_rooms" />
+          </AssociationSet>
+          <AssociationSet Name="fk_media_event" Association="Self.fk_media_event">
+            <End Role="events" EntitySet="events" />
+            <End Role="media" EntitySet="media" />
+          </AssociationSet>
+          <AssociationSet Name="fk_messages_chat" Association="Self.fk_messages_chat">
+            <End Role="chatrooms" EntitySet="chatrooms" />
+            <End Role="messages" EntitySet="messages" />
+          </AssociationSet>
+          <AssociationSet Name="fk_messages_sender" Association="Self.fk_messages_sender">
+            <End Role="users" EntitySet="users" />
+            <End Role="messages" EntitySet="messages" />
+          </AssociationSet>
+          <AssociationSet Name="fk_rooms_inventory" Association="Self.fk_rooms_inventory">
+            <End Role="inventory_items" EntitySet="inventory_items" />
+            <End Role="inventory_rooms" EntitySet="inventory_rooms" />
+          </AssociationSet>
+          <AssociationSet Name="fk_seats_room" Association="Self.fk_seats_room">
+            <End Role="rooms" EntitySet="rooms" />
+            <End Role="seats" EntitySet="seats" />
+          </AssociationSet>
+          <AssociationSet Name="fk_tickets_buyer" Association="Self.fk_tickets_buyer">
+            <End Role="users" EntitySet="users" />
+            <End Role="tickets" EntitySet="tickets" />
+          </AssociationSet>
+          <AssociationSet Name="fk_tickets_event" Association="Self.fk_tickets_event">
+            <End Role="events" EntitySet="events" />
+            <End Role="tickets" EntitySet="tickets" />
+          </AssociationSet>
+          <AssociationSet Name="fk_tickets_incidences" Association="Self.fk_tickets_incidences">
+            <End Role="tickets" EntitySet="tickets" />
+            <End Role="incidences_tickets" EntitySet="incidences_tickets" />
+          </AssociationSet>
+          <AssociationSet Name="fk_tickets_seat" Association="Self.fk_tickets_seat">
+            <End Role="seats" EntitySet="seats" />
+            <End Role="tickets" EntitySet="tickets" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="eventologyModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="chatrooms">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="user1_id" Type="Int32" Nullable="false" />
+          <Property Name="user2_id" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="users" Relationship="Self.fk_chatrooms_user1" FromRole="chatrooms" ToRole="users" />
+          <NavigationProperty Name="users1" Relationship="Self.fk_chatrooms_user2" FromRole="chatrooms" ToRole="users" />
+          <NavigationProperty Name="messages" Relationship="Self.fk_messages_chat" FromRole="chatrooms" ToRole="messages" />
+        </EntityType>
+        <EntityType Name="events">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="description" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="if_full_day" Type="Boolean" />
+          <Property Name="start_time" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="end_time" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="status" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="created_at" Type="DateTime" Precision="3" />
+          <Property Name="organizer_id" Type="Int32" Nullable="false" />
+          <Property Name="room_id" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="users" Relationship="Self.fk_events_organizer" FromRole="events" ToRole="users" />
+          <NavigationProperty Name="rooms" Relationship="Self.fk_events_room" FromRole="events" ToRole="rooms" />
+          <NavigationProperty Name="media" Relationship="Self.fk_media_event" FromRole="events" ToRole="media" />
+          <NavigationProperty Name="tickets" Relationship="Self.fk_tickets_event" FromRole="events" ToRole="tickets" />
+        </EntityType>
+        <EntityType Name="incidences">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="reason" Type="String" MaxLength="500" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="status" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="normal_user_id" Type="Int32" Nullable="false" />
+          <Property Name="solver_user_id" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="users" Relationship="Self.fk_incidences_normal_user" FromRole="incidences" ToRole="users" />
+          <NavigationProperty Name="users1" Relationship="Self.fk_incidences_solver_user" FromRole="incidences" ToRole="users" />
+          <NavigationProperty Name="tickets" Relationship="Self.incidences_tickets" FromRole="incidences" ToRole="tickets" />
+        </EntityType>
+        <EntityType Name="inventory_items">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="description" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="inventory_rooms" Relationship="Self.fk_rooms_inventory" FromRole="inventory_items" ToRole="inventory_rooms" />
+        </EntityType>
+        <EntityType Name="inventory_rooms">
+          <Key>
+            <PropertyRef Name="room_id" />
+            <PropertyRef Name="inventory_id" />
+          </Key>
+          <Property Name="room_id" Type="Int32" Nullable="false" />
+          <Property Name="inventory_id" Type="Int32" Nullable="false" />
+          <Property Name="quantity" Type="Int32" />
+          <NavigationProperty Name="inventory_items" Relationship="Self.fk_rooms_inventory" FromRole="inventory_rooms" ToRole="inventory_items" />
+          <NavigationProperty Name="rooms" Relationship="Self.fk_inventory_rooms" FromRole="inventory_rooms" ToRole="rooms" />
+        </EntityType>
+        <EntityType Name="media">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="path" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="event_id" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="events" Relationship="Self.fk_media_event" FromRole="media" ToRole="events" />
+        </EntityType>
+        <EntityType Name="messages">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="content" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="date" Type="DateTime" Precision="3" />
+          <Property Name="status" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="sender_id" Type="Int32" Nullable="false" />
+          <Property Name="chat_id" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="chatrooms" Relationship="Self.fk_messages_chat" FromRole="messages" ToRole="chatrooms" />
+          <NavigationProperty Name="users" Relationship="Self.fk_messages_sender" FromRole="messages" ToRole="users" />
+        </EntityType>
+        <EntityType Name="rooms">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="capacity" Type="Int32" />
+          <Property Name="description" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="events" Relationship="Self.fk_events_room" FromRole="rooms" ToRole="events" />
+          <NavigationProperty Name="inventory_rooms" Relationship="Self.fk_inventory_rooms" FromRole="rooms" ToRole="inventory_rooms" />
+          <NavigationProperty Name="seats" Relationship="Self.fk_seats_room" FromRole="rooms" ToRole="seats" />
+        </EntityType>
+        <EntityType Name="seats">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="row_number" Type="Int32" Nullable="false" />
+          <Property Name="seat_number" Type="Int32" Nullable="false" />
+          <Property Name="room_id" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="rooms" Relationship="Self.fk_seats_room" FromRole="seats" ToRole="rooms" />
+          <NavigationProperty Name="tickets" Relationship="Self.fk_tickets_seat" FromRole="seats" ToRole="tickets" />
+        </EntityType>
+        <EntityType Name="tickets">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="reservation" Type="DateTime" Precision="3" />
+          <Property Name="status" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="buyer_id" Type="Int32" Nullable="false" />
+          <Property Name="event_id" Type="Int32" Nullable="false" />
+          <Property Name="seat_id" Type="Int32" />
+          <NavigationProperty Name="events" Relationship="Self.fk_tickets_event" FromRole="tickets" ToRole="events" />
+          <NavigationProperty Name="seats" Relationship="Self.fk_tickets_seat" FromRole="tickets" ToRole="seats" />
+          <NavigationProperty Name="users" Relationship="Self.fk_tickets_buyer" FromRole="tickets" ToRole="users" />
+          <NavigationProperty Name="incidences" Relationship="Self.incidences_tickets" FromRole="tickets" ToRole="incidences" />
+        </EntityType>
+        <EntityType Name="users">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="email" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="password" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="type" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="chatrooms" Relationship="Self.fk_chatrooms_user1" FromRole="users" ToRole="chatrooms" />
+          <NavigationProperty Name="chatrooms1" Relationship="Self.fk_chatrooms_user2" FromRole="users" ToRole="chatrooms" />
+          <NavigationProperty Name="events" Relationship="Self.fk_events_organizer" FromRole="users" ToRole="events" />
+          <NavigationProperty Name="incidences" Relationship="Self.fk_incidences_normal_user" FromRole="users" ToRole="incidences" />
+          <NavigationProperty Name="incidences1" Relationship="Self.fk_incidences_solver_user" FromRole="users" ToRole="incidences" />
+          <NavigationProperty Name="messages" Relationship="Self.fk_messages_sender" FromRole="users" ToRole="messages" />
+          <NavigationProperty Name="tickets" Relationship="Self.fk_tickets_buyer" FromRole="users" ToRole="tickets" />
+        </EntityType>
+        <Association Name="fk_chatrooms_user1">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="chatrooms" Type="Self.chatrooms" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="chatrooms">
+              <PropertyRef Name="user1_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_chatrooms_user2">
+          <End Role="users" Type="Self.users" Multiplicity="1" />
+          <End Role="chatrooms" Type="Self.chatrooms" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="chatrooms">
+              <PropertyRef Name="user2_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_messages_chat">
+          <End Role="chatrooms" Type="Self.chatrooms" Multiplicity="1" />
+          <End Role="messages" Type="Self.messages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="chatrooms">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="messages">
+              <PropertyRef Name="chat_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_events_organizer">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="events" Type="Self.events" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="events">
+              <PropertyRef Name="organizer_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_events_room">
+          <End Role="rooms" Type="Self.rooms" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="events" Type="Self.events" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="rooms">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="events">
+              <PropertyRef Name="room_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_media_event">
+          <End Role="events" Type="Self.events" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="media" Type="Self.media" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="events">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="media">
+              <PropertyRef Name="event_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_tickets_event">
+          <End Role="events" Type="Self.events" Multiplicity="1" />
+          <End Role="tickets" Type="Self.tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="events">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tickets">
+              <PropertyRef Name="event_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_incidences_normal_user">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="incidences" Type="Self.incidences" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="incidences">
+              <PropertyRef Name="normal_user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_incidences_solver_user">
+          <End Role="users" Type="Self.users" Multiplicity="1" />
+          <End Role="incidences" Type="Self.incidences" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="incidences">
+              <PropertyRef Name="solver_user_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_rooms_inventory">
+          <End Role="inventory_items" Type="Self.inventory_items" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="inventory_rooms" Type="Self.inventory_rooms" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="inventory_items">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventory_rooms">
+              <PropertyRef Name="inventory_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_inventory_rooms">
+          <End Role="rooms" Type="Self.rooms" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="inventory_rooms" Type="Self.inventory_rooms" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="rooms">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="inventory_rooms">
+              <PropertyRef Name="room_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_messages_sender">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="messages" Type="Self.messages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="messages">
+              <PropertyRef Name="sender_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_seats_room">
+          <End Role="rooms" Type="Self.rooms" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="seats" Type="Self.seats" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="rooms">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="seats">
+              <PropertyRef Name="room_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_tickets_seat">
+          <End Role="seats" Type="Self.seats" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="tickets" Type="Self.tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="seats">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tickets">
+              <PropertyRef Name="seat_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_tickets_buyer">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="tickets" Type="Self.tickets" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tickets">
+              <PropertyRef Name="buyer_id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="incidences_tickets">
+          <End Role="incidences" Type="Self.incidences" Multiplicity="*" />
+          <End Role="tickets" Type="Self.tickets" Multiplicity="*" />
+        </Association>
+        <EntityContainer Name="eventologyEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="chatrooms" EntityType="Self.chatrooms" />
+          <EntitySet Name="events" EntityType="Self.events" />
+          <EntitySet Name="incidences" EntityType="Self.incidences" />
+          <EntitySet Name="inventory_items" EntityType="Self.inventory_items" />
+          <EntitySet Name="inventory_rooms" EntityType="Self.inventory_rooms" />
+          <EntitySet Name="media" EntityType="Self.media" />
+          <EntitySet Name="messages" EntityType="Self.messages" />
+          <EntitySet Name="rooms" EntityType="Self.rooms" />
+          <EntitySet Name="seats" EntityType="Self.seats" />
+          <EntitySet Name="tickets" EntityType="Self.tickets" />
+          <EntitySet Name="users" EntityType="Self.users" />
+          <AssociationSet Name="fk_chatrooms_user1" Association="Self.fk_chatrooms_user1">
+            <End Role="users" EntitySet="users" />
+            <End Role="chatrooms" EntitySet="chatrooms" />
+          </AssociationSet>
+          <AssociationSet Name="fk_chatrooms_user2" Association="Self.fk_chatrooms_user2">
+            <End Role="users" EntitySet="users" />
+            <End Role="chatrooms" EntitySet="chatrooms" />
+          </AssociationSet>
+          <AssociationSet Name="fk_messages_chat" Association="Self.fk_messages_chat">
+            <End Role="chatrooms" EntitySet="chatrooms" />
+            <End Role="messages" EntitySet="messages" />
+          </AssociationSet>
+          <AssociationSet Name="fk_events_organizer" Association="Self.fk_events_organizer">
+            <End Role="users" EntitySet="users" />
+            <End Role="events" EntitySet="events" />
+          </AssociationSet>
+          <AssociationSet Name="fk_events_room" Association="Self.fk_events_room">
+            <End Role="rooms" EntitySet="rooms" />
+            <End Role="events" EntitySet="events" />
+          </AssociationSet>
+          <AssociationSet Name="fk_media_event" Association="Self.fk_media_event">
+            <End Role="events" EntitySet="events" />
+            <End Role="media" EntitySet="media" />
+          </AssociationSet>
+          <AssociationSet Name="fk_tickets_event" Association="Self.fk_tickets_event">
+            <End Role="events" EntitySet="events" />
+            <End Role="tickets" EntitySet="tickets" />
+          </AssociationSet>
+          <AssociationSet Name="fk_incidences_normal_user" Association="Self.fk_incidences_normal_user">
+            <End Role="users" EntitySet="users" />
+            <End Role="incidences" EntitySet="incidences" />
+          </AssociationSet>
+          <AssociationSet Name="fk_incidences_solver_user" Association="Self.fk_incidences_solver_user">
+            <End Role="users" EntitySet="users" />
+            <End Role="incidences" EntitySet="incidences" />
+          </AssociationSet>
+          <AssociationSet Name="fk_rooms_inventory" Association="Self.fk_rooms_inventory">
+            <End Role="inventory_items" EntitySet="inventory_items" />
+            <End Role="inventory_rooms" EntitySet="inventory_rooms" />
+          </AssociationSet>
+          <AssociationSet Name="fk_inventory_rooms" Association="Self.fk_inventory_rooms">
+            <End Role="rooms" EntitySet="rooms" />
+            <End Role="inventory_rooms" EntitySet="inventory_rooms" />
+          </AssociationSet>
+          <AssociationSet Name="fk_messages_sender" Association="Self.fk_messages_sender">
+            <End Role="users" EntitySet="users" />
+            <End Role="messages" EntitySet="messages" />
+          </AssociationSet>
+          <AssociationSet Name="fk_seats_room" Association="Self.fk_seats_room">
+            <End Role="rooms" EntitySet="rooms" />
+            <End Role="seats" EntitySet="seats" />
+          </AssociationSet>
+          <AssociationSet Name="fk_tickets_seat" Association="Self.fk_tickets_seat">
+            <End Role="seats" EntitySet="seats" />
+            <End Role="tickets" EntitySet="tickets" />
+          </AssociationSet>
+          <AssociationSet Name="fk_tickets_buyer" Association="Self.fk_tickets_buyer">
+            <End Role="users" EntitySet="users" />
+            <End Role="tickets" EntitySet="tickets" />
+          </AssociationSet>
+          <AssociationSet Name="incidences_tickets" Association="Self.incidences_tickets">
+            <End Role="incidences" EntitySet="incidences" />
+            <End Role="tickets" EntitySet="tickets" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="eventologyModelStoreContainer" CdmEntityContainer="eventologyEntities">
+          <EntitySetMapping Name="chatrooms">
+            <EntityTypeMapping TypeName="eventologyModel.chatrooms">
+              <MappingFragment StoreEntitySet="chatrooms">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="user1_id" ColumnName="user1_id" />
+                <ScalarProperty Name="user2_id" ColumnName="user2_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="events">
+            <EntityTypeMapping TypeName="eventologyModel.events">
+              <MappingFragment StoreEntitySet="events">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="description" ColumnName="description" />
+                <ScalarProperty Name="if_full_day" ColumnName="if_full_day" />
+                <ScalarProperty Name="start_time" ColumnName="start_time" />
+                <ScalarProperty Name="end_time" ColumnName="end_time" />
+                <ScalarProperty Name="status" ColumnName="status" />
+                <ScalarProperty Name="created_at" ColumnName="created_at" />
+                <ScalarProperty Name="organizer_id" ColumnName="organizer_id" />
+                <ScalarProperty Name="room_id" ColumnName="room_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="incidences">
+            <EntityTypeMapping TypeName="eventologyModel.incidences">
+              <MappingFragment StoreEntitySet="incidences">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="reason" ColumnName="reason" />
+                <ScalarProperty Name="status" ColumnName="status" />
+                <ScalarProperty Name="normal_user_id" ColumnName="normal_user_id" />
+                <ScalarProperty Name="solver_user_id" ColumnName="solver_user_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="inventory_items">
+            <EntityTypeMapping TypeName="eventologyModel.inventory_items">
+              <MappingFragment StoreEntitySet="inventory_items">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="description" ColumnName="description" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="inventory_rooms">
+            <EntityTypeMapping TypeName="eventologyModel.inventory_rooms">
+              <MappingFragment StoreEntitySet="inventory_rooms">
+                <ScalarProperty Name="room_id" ColumnName="room_id" />
+                <ScalarProperty Name="inventory_id" ColumnName="inventory_id" />
+                <ScalarProperty Name="quantity" ColumnName="quantity" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="media">
+            <EntityTypeMapping TypeName="eventologyModel.media">
+              <MappingFragment StoreEntitySet="media">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="path" ColumnName="path" />
+                <ScalarProperty Name="event_id" ColumnName="event_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="messages">
+            <EntityTypeMapping TypeName="eventologyModel.messages">
+              <MappingFragment StoreEntitySet="messages">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="content" ColumnName="content" />
+                <ScalarProperty Name="date" ColumnName="date" />
+                <ScalarProperty Name="status" ColumnName="status" />
+                <ScalarProperty Name="sender_id" ColumnName="sender_id" />
+                <ScalarProperty Name="chat_id" ColumnName="chat_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="rooms">
+            <EntityTypeMapping TypeName="eventologyModel.rooms">
+              <MappingFragment StoreEntitySet="rooms">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="capacity" ColumnName="capacity" />
+                <ScalarProperty Name="description" ColumnName="description" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="seats">
+            <EntityTypeMapping TypeName="eventologyModel.seats">
+              <MappingFragment StoreEntitySet="seats">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="row_number" ColumnName="row_number" />
+                <ScalarProperty Name="seat_number" ColumnName="seat_number" />
+                <ScalarProperty Name="room_id" ColumnName="room_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tickets">
+            <EntityTypeMapping TypeName="eventologyModel.tickets">
+              <MappingFragment StoreEntitySet="tickets">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="reservation" ColumnName="reservation" />
+                <ScalarProperty Name="status" ColumnName="status" />
+                <ScalarProperty Name="buyer_id" ColumnName="buyer_id" />
+                <ScalarProperty Name="event_id" ColumnName="event_id" />
+                <ScalarProperty Name="seat_id" ColumnName="seat_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="users">
+            <EntityTypeMapping TypeName="eventologyModel.users">
+              <MappingFragment StoreEntitySet="users">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="email" ColumnName="email" />
+                <ScalarProperty Name="password" ColumnName="password" />
+                <ScalarProperty Name="type" ColumnName="type" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <AssociationSetMapping Name="incidences_tickets" TypeName="eventologyModel.incidences_tickets" StoreEntitySet="incidences_tickets">
+            <EndProperty Name="incidences">
+              <ScalarProperty Name="id" ColumnName="incidence_id" />
+            </EndProperty>
+            <EndProperty Name="tickets">
+              <ScalarProperty Name="id" ColumnName="ticket_id" />
+            </EndProperty>
+          </AssociationSetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="Ninguno" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
