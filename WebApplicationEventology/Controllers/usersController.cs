@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http.Description;
 using WebApplicationEventology.Models;
 using System.Data.Entity.Infrastructure;
+using System.Collections.Generic;
 
 namespace WebApplicationEventology.Controllers
 {
@@ -14,102 +15,137 @@ namespace WebApplicationEventology.Controllers
         private eventologyEntities db = new eventologyEntities();
 
         // GET: api/users
-        public IQueryable<users> Getusers()
+        /// <summary>
+        /// Gets all users (only main fields).
+        /// </summary>
+        [HttpGet]
+        [Route("api/users")]
+        [ResponseType(typeof(IEnumerable<object>))]
+        public async Task<IHttpActionResult> Getusers()
         {
-            return db.users;
-        }
+            db.Configuration.LazyLoadingEnabled = false;
 
-        // GET: api/users/5
-        [ResponseType(typeof(users))]
-        public async Task<IHttpActionResult> Getusers(int id)
-        {
-            users users = await db.users.FindAsync(id);
-            if (users == null)
-            {
-                return NotFound();
-            }
+            var users = await db.users
+                .Select(u => new
+                {
+                    u.id,
+                    u.name,
+                    u.email,
+                    u.password,
+                    u.type
+                })
+                .ToListAsync();
 
             return Ok(users);
         }
 
-        // PUT: api/users/5
+        // GET: api/users/{id}
+        /// <summary>
+        /// Gets a specific user by ID (only main fields).
+        /// </summary>
+        [HttpGet]
+        [Route("api/users/{id:int}")]
+        [ResponseType(typeof(object))]
+        public async Task<IHttpActionResult> Getuser(int id)
+        {
+            db.Configuration.LazyLoadingEnabled = false;
+
+            var user = await db.users
+                .Where(u => u.id == id)
+                .Select(u => new
+                {
+                    u.id,
+                    u.name,
+                    u.email,
+                    u.password,
+                    u.type
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
+        }
+
+        // PUT: api/users/{id}
+        /// <summary>
+        /// Updates a specific user by ID.
+        /// </summary>
+        [HttpPut]
+        [Route("api/users/{id:int}")]
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> Putusers(int id, users users)
+        public async Task<IHttpActionResult> Putusers(int id, users userData)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            if (id != users.id)
-            {
-                return BadRequest();
-            }
+            if (id != userData.id)
+                return BadRequest("ID mismatch.");
 
-            db.Entry(users).State = EntityState.Modified;
+            var existing = await db.users.FindAsync(id);
+            if (existing == null)
+                return NotFound();
+
+            existing.name = userData.name;
+            existing.email = userData.email;
+            existing.password = userData.password;
+            existing.type = userData.type;
 
             try
             {
                 await db.SaveChangesAsync();
+                return StatusCode(HttpStatusCode.NoContent);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!usersExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return InternalServerError();
             }
-
-            return StatusCode(HttpStatusCode.NoContent);
         }
 
         // POST: api/users
+        /// <summary>
+        /// Creates a new user.
+        /// </summary>
+        [HttpPost]
+        [Route("api/users")]
         [ResponseType(typeof(users))]
-        public async Task<IHttpActionResult> Postusers(users users)
+        public async Task<IHttpActionResult> Postusers(users user)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            db.users.Add(users);
+            db.users.Add(user);
             await db.SaveChangesAsync();
 
-            return CreatedAtRoute("DefaultApi", new { id = users.id }, users);
+            return CreatedAtRoute("DefaultApi", new { id = user.id }, user);
         }
 
-        // DELETE: api/users/5
+        // DELETE: api/users/{id}
+        /// <summary>
+        /// Deletes a specific user by ID.
+        /// </summary>
+        [HttpDelete]
+        [Route("api/users/{id:int}")]
         [ResponseType(typeof(users))]
         public async Task<IHttpActionResult> Deleteusers(int id)
         {
-            users users = await db.users.FindAsync(id);
-            if (users == null)
-            {
+            var user = await db.users.FindAsync(id);
+            if (user == null)
                 return NotFound();
-            }
 
-            db.users.Remove(users);
+            db.users.Remove(user);
             await db.SaveChangesAsync();
 
-            return Ok(users);
+            return Ok(user);
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
 
-        private bool usersExists(int id)
-        {
-            return db.users.Count(e => e.id == id) > 0;
+            base.Dispose(disposing);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http.Description;
 using WebApplicationEventology.Models;
 using System.Data.Entity.Infrastructure;
+using System.Collections.Generic;
 
 namespace WebApplicationEventology.Controllers
 {
@@ -14,102 +15,131 @@ namespace WebApplicationEventology.Controllers
         private eventologyEntities db = new eventologyEntities();
 
         // GET: api/seats
-        public IQueryable<seats> Getseats()
+        /// <summary>
+        /// Gets all seats (only main fields).
+        /// </summary>
+        [HttpGet]
+        [Route("api/seats")]
+        [ResponseType(typeof(IEnumerable<object>))]
+        public async Task<IHttpActionResult> Getseats()
         {
-            return db.seats;
-        }
+            db.Configuration.LazyLoadingEnabled = false;
 
-        // GET: api/seats/5
-        [ResponseType(typeof(seats))]
-        public async Task<IHttpActionResult> Getseats(int id)
-        {
-            seats seats = await db.seats.FindAsync(id);
-            if (seats == null)
-            {
-                return NotFound();
-            }
+            var seats = await db.seats
+                .Select(s => new
+                {
+                    s.id,
+                    s.row_number,
+                    s.seat_number
+                })
+                .ToListAsync();
 
             return Ok(seats);
         }
 
-        // PUT: api/seats/5
+        // GET: api/seats/{id}
+        /// <summary>
+        /// Gets a specific seat by ID (only main fields).
+        /// </summary>
+        [HttpGet]
+        [Route("api/seats/{id:int}")]
+        [ResponseType(typeof(object))]
+        public async Task<IHttpActionResult> Getseats(int id)
+        {
+            db.Configuration.LazyLoadingEnabled = false;
+
+            var seat = await db.seats
+                .Where(s => s.id == id)
+                .Select(s => new
+                {
+                    s.id,
+                    s.row_number,
+                    s.seat_number
+                })
+                .FirstOrDefaultAsync();
+
+            if (seat == null)
+                return NotFound();
+
+            return Ok(seat);
+        }
+
+        // PUT: api/seats/{id}
+        /// <summary>
+        /// Updates a specific seat by ID.
+        /// </summary>
+        [HttpPut]
+        [Route("api/seats/{id:int}")]
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> Putseats(int id, seats seats)
+        public async Task<IHttpActionResult> Putseats(int id, seats seatData)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            if (id != seats.id)
-            {
-                return BadRequest();
-            }
+            if (id != seatData.id)
+                return BadRequest("ID mismatch.");
 
-            db.Entry(seats).State = EntityState.Modified;
+            var existing = await db.seats.FindAsync(id);
+            if (existing == null)
+                return NotFound();
+
+            existing.row_number = seatData.row_number;
+            existing.seat_number = seatData.seat_number;
 
             try
             {
                 await db.SaveChangesAsync();
+                return StatusCode(HttpStatusCode.NoContent);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!seatsExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return InternalServerError();
             }
-
-            return StatusCode(HttpStatusCode.NoContent);
         }
 
         // POST: api/seats
+        /// <summary>
+        /// Creates a new seat.
+        /// </summary>
+        [HttpPost]
+        [Route("api/seats")]
         [ResponseType(typeof(seats))]
-        public async Task<IHttpActionResult> Postseats(seats seats)
+        public async Task<IHttpActionResult> Postseats(seats seat)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            db.seats.Add(seats);
+            db.seats.Add(seat);
             await db.SaveChangesAsync();
 
-            return CreatedAtRoute("DefaultApi", new { id = seats.id }, seats);
+            return CreatedAtRoute("DefaultApi", new { id = seat.id }, seat);
         }
 
-        // DELETE: api/seats/5
+        // DELETE: api/seats/{id}
+        /// <summary>
+        /// Deletes a specific seat by ID.
+        /// </summary>
+        [HttpDelete]
+        [Route("api/seats/{id:int}")]
         [ResponseType(typeof(seats))]
         public async Task<IHttpActionResult> Deleteseats(int id)
         {
-            seats seats = await db.seats.FindAsync(id);
-            if (seats == null)
-            {
+            var seat = await db.seats.FindAsync(id);
+            if (seat == null)
                 return NotFound();
-            }
 
-            db.seats.Remove(seats);
+            db.seats.Remove(seat);
             await db.SaveChangesAsync();
 
-            return Ok(seats);
+            return Ok(seat);
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
 
-        private bool seatsExists(int id)
-        {
-            return db.seats.Count(e => e.id == id) > 0;
+            base.Dispose(disposing);
         }
     }
 }

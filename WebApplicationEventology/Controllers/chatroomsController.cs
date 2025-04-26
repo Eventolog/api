@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http.Description;
 using WebApplicationEventology.Models;
 using System.Data.Entity.Infrastructure;
+using System.Collections.Generic;
 
 namespace WebApplicationEventology.Controllers
 {
@@ -14,102 +15,126 @@ namespace WebApplicationEventology.Controllers
         private eventologyEntities db = new eventologyEntities();
 
         // GET: api/chatrooms
-        public IQueryable<chatrooms> Getchatrooms()
+        /// <summary>
+        /// Gets all chatrooms (only local fields, no foreign keys expanded).
+        /// </summary>
+        [HttpGet]
+        [Route("api/chatrooms")]
+        [ResponseType(typeof(IEnumerable<object>))]
+        public async Task<IHttpActionResult> Getchatrooms()
         {
-            return db.chatrooms;
-        }
+            db.Configuration.LazyLoadingEnabled = false;
 
-        // GET: api/chatrooms/5
-        [ResponseType(typeof(chatrooms))]
-        public async Task<IHttpActionResult> Getchatrooms(int id)
-        {
-            chatrooms chatrooms = await db.chatrooms.FindAsync(id);
-            if (chatrooms == null)
-            {
-                return NotFound();
-            }
+            var chatrooms = await db.chatrooms
+                .Select(c => new
+                {
+                    c.id
+                })
+                .ToListAsync();
 
             return Ok(chatrooms);
         }
 
-        // PUT: api/chatrooms/5
+        // GET: api/chatrooms/{id}
+        /// <summary>
+        /// Gets a specific chatroom by ID (only local fields, no foreign keys expanded).
+        /// </summary>
+        [HttpGet]
+        [Route("api/chatrooms/{id:int}")]
+        [ResponseType(typeof(object))]
+        public async Task<IHttpActionResult> Getchatroom(int id)
+        {
+            db.Configuration.LazyLoadingEnabled = false;
+
+            var chatroom = await db.chatrooms
+                .Where(c => c.id == id)
+                .Select(c => new
+                {
+                    c.id
+                })
+                .FirstOrDefaultAsync();
+
+            if (chatroom == null)
+                return NotFound();
+
+            return Ok(chatroom);
+        }
+
+        // PUT: api/chatrooms/{id}
+        /// <summary>
+        /// Updates a specific chatroom by ID.
+        /// </summary>
+        [HttpPut]
+        [Route("api/chatrooms/{id:int}")]
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> Putchatrooms(int id, chatrooms chatrooms)
+        public async Task<IHttpActionResult> Putchatroom(int id, chatrooms chatroomUpdate)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            if (id != chatrooms.id)
-            {
-                return BadRequest();
-            }
+            if (id != chatroomUpdate.id)
+                return BadRequest("ID mismatch.");
 
-            db.Entry(chatrooms).State = EntityState.Modified;
+            var existing = await db.chatrooms.FindAsync(id);
+            if (existing == null)
+                return NotFound();
+
+            existing.user1_id = chatroomUpdate.user1_id;
+            existing.user2_id = chatroomUpdate.user2_id;
 
             try
             {
                 await db.SaveChangesAsync();
+                return StatusCode(HttpStatusCode.NoContent);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!chatroomsExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return InternalServerError();
             }
-
-            return StatusCode(HttpStatusCode.NoContent);
         }
 
         // POST: api/chatrooms
+        /// <summary>
+        /// Creates a new chatroom.
+        /// </summary>
+        [HttpPost]
+        [Route("api/chatrooms")]
         [ResponseType(typeof(chatrooms))]
-        public async Task<IHttpActionResult> Postchatrooms(chatrooms chatrooms)
+        public async Task<IHttpActionResult> Postchatroom(chatrooms newChatroom)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            db.chatrooms.Add(chatrooms);
+            db.chatrooms.Add(newChatroom);
             await db.SaveChangesAsync();
 
-            return CreatedAtRoute("DefaultApi", new { id = chatrooms.id }, chatrooms);
+            return CreatedAtRoute("DefaultApi", new { id = newChatroom.id }, newChatroom);
         }
 
-        // DELETE: api/chatrooms/5
+        // DELETE: api/chatrooms/{id}
+        /// <summary>
+        /// Deletes a specific chatroom by ID.
+        /// </summary>
+        [HttpDelete]
+        [Route("api/chatrooms/{id:int}")]
         [ResponseType(typeof(chatrooms))]
-        public async Task<IHttpActionResult> Deletechatrooms(int id)
+        public async Task<IHttpActionResult> Deletechatroom(int id)
         {
-            chatrooms chatrooms = await db.chatrooms.FindAsync(id);
-            if (chatrooms == null)
-            {
+            var chatroom = await db.chatrooms.FindAsync(id);
+            if (chatroom == null)
                 return NotFound();
-            }
 
-            db.chatrooms.Remove(chatrooms);
+            db.chatrooms.Remove(chatroom);
             await db.SaveChangesAsync();
 
-            return Ok(chatrooms);
+            return Ok(chatroom);
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 db.Dispose();
-            }
             base.Dispose(disposing);
-        }
-
-        private bool chatroomsExists(int id)
-        {
-            return db.chatrooms.Count(e => e.id == id) > 0;
         }
     }
 }

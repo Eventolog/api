@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http.Description;
 using WebApplicationEventology.Models;
 using System.Data.Entity.Infrastructure;
+using System.Collections.Generic;
 
 namespace WebApplicationEventology.Controllers
 {
@@ -14,102 +15,134 @@ namespace WebApplicationEventology.Controllers
         private eventologyEntities db = new eventologyEntities();
 
         // GET: api/messages
-        public IQueryable<messages> Getmessages()
+        /// <summary>
+        /// Gets all messages (only main fields).
+        /// </summary>
+        [HttpGet]
+        [Route("api/messages")]
+        [ResponseType(typeof(IEnumerable<object>))]
+        public async Task<IHttpActionResult> Getmessages()
         {
-            return db.messages;
-        }
+            db.Configuration.LazyLoadingEnabled = false;
 
-        // GET: api/messages/5
-        [ResponseType(typeof(messages))]
-        public async Task<IHttpActionResult> Getmessages(int id)
-        {
-            messages messages = await db.messages.FindAsync(id);
-            if (messages == null)
-            {
-                return NotFound();
-            }
+            var messages = await db.messages
+                .Select(m => new
+                {
+                    m.id,
+                    m.content,
+                    m.date,
+                    m.status
+                })
+                .ToListAsync();
 
             return Ok(messages);
         }
 
-        // PUT: api/messages/5
+        // GET: api/messages/{id}
+        /// <summary>
+        /// Gets a specific message by ID.
+        /// </summary>
+        [HttpGet]
+        [Route("api/messages/{id:int}")]
+        [ResponseType(typeof(object))]
+        public async Task<IHttpActionResult> Getmessages(int id)
+        {
+            db.Configuration.LazyLoadingEnabled = false;
+
+            var message = await db.messages
+                .Where(m => m.id == id)
+                .Select(m => new
+                {
+                    m.id,
+                    m.content,
+                    m.date,
+                    m.status
+                })
+                .FirstOrDefaultAsync();
+
+            if (message == null)
+                return NotFound();
+
+            return Ok(message);
+        }
+
+        // PUT: api/messages/{id}
+        /// <summary>
+        /// Updates a specific message by ID.
+        /// </summary>
+        [HttpPut]
+        [Route("api/messages/{id:int}")]
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> Putmessages(int id, messages messages)
+        public async Task<IHttpActionResult> Putmessages(int id, messages messageData)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            if (id != messages.id)
-            {
-                return BadRequest();
-            }
+            if (id != messageData.id)
+                return BadRequest("ID mismatch.");
 
-            db.Entry(messages).State = EntityState.Modified;
+            var existing = await db.messages.FindAsync(id);
+            if (existing == null)
+                return NotFound();
+
+            existing.content = messageData.content;
+            existing.date = messageData.date;
+            existing.status = messageData.status;
 
             try
             {
                 await db.SaveChangesAsync();
+                return StatusCode(HttpStatusCode.NoContent);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!messagesExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return InternalServerError();
             }
-
-            return StatusCode(HttpStatusCode.NoContent);
         }
 
         // POST: api/messages
+        /// <summary>
+        /// Creates a new message.
+        /// </summary>
+        [HttpPost]
+        [Route("api/messages")]
         [ResponseType(typeof(messages))]
-        public async Task<IHttpActionResult> Postmessages(messages messages)
+        public async Task<IHttpActionResult> Postmessages(messages message)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            db.messages.Add(messages);
+            db.messages.Add(message);
             await db.SaveChangesAsync();
 
-            return CreatedAtRoute("DefaultApi", new { id = messages.id }, messages);
+            return CreatedAtRoute("DefaultApi", new { id = message.id }, message);
         }
 
-        // DELETE: api/messages/5
+        // DELETE: api/messages/{id}
+        /// <summary>
+        /// Deletes a specific message by ID.
+        /// </summary>
+        [HttpDelete]
+        [Route("api/messages/{id:int}")]
         [ResponseType(typeof(messages))]
         public async Task<IHttpActionResult> Deletemessages(int id)
         {
-            messages messages = await db.messages.FindAsync(id);
-            if (messages == null)
-            {
+            var message = await db.messages.FindAsync(id);
+            if (message == null)
                 return NotFound();
-            }
 
-            db.messages.Remove(messages);
+            db.messages.Remove(message);
             await db.SaveChangesAsync();
 
-            return Ok(messages);
+            return Ok(message);
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
 
-        private bool messagesExists(int id)
-        {
-            return db.messages.Count(e => e.id == id) > 0;
+            base.Dispose(disposing);
         }
     }
 }

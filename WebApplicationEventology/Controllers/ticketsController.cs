@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http.Description;
 using WebApplicationEventology.Models;
 using System.Data.Entity.Infrastructure;
+using System.Collections.Generic;
 
 namespace WebApplicationEventology.Controllers
 {
@@ -14,102 +15,134 @@ namespace WebApplicationEventology.Controllers
         private eventologyEntities db = new eventologyEntities();
 
         // GET: api/tickets
-        public IQueryable<tickets> Gettickets()
+        /// <summary>
+        /// Gets all tickets (only main fields).
+        /// </summary>
+        [HttpGet]
+        [Route("api/tickets")]
+        [ResponseType(typeof(IEnumerable<object>))]
+        public async Task<IHttpActionResult> Gettickets()
         {
-            return db.tickets;
-        }
+            db.Configuration.LazyLoadingEnabled = false;
 
-        // GET: api/tickets/5
-        [ResponseType(typeof(tickets))]
-        public async Task<IHttpActionResult> Gettickets(int id)
-        {
-            tickets tickets = await db.tickets.FindAsync(id);
-            if (tickets == null)
-            {
-                return NotFound();
-            }
+            var tickets = await db.tickets
+                .Select(t => new
+                {
+                    t.id,
+                    t.name,
+                    t.reservation,
+                    t.status
+                })
+                .ToListAsync();
 
             return Ok(tickets);
         }
 
-        // PUT: api/tickets/5
+        // GET: api/tickets/{id}
+        /// <summary>
+        /// Gets a specific ticket by ID (only main fields).
+        /// </summary>
+        [HttpGet]
+        [Route("api/tickets/{id:int}")]
+        [ResponseType(typeof(object))]
+        public async Task<IHttpActionResult> Getticket(int id)
+        {
+            db.Configuration.LazyLoadingEnabled = false;
+
+            var ticket = await db.tickets
+                .Where(t => t.id == id)
+                .Select(t => new
+                {
+                    t.id,
+                    t.name,
+                    t.reservation,
+                    t.status
+                })
+                .FirstOrDefaultAsync();
+
+            if (ticket == null)
+                return NotFound();
+
+            return Ok(ticket);
+        }
+
+        // PUT: api/tickets/{id}
+        /// <summary>
+        /// Updates a specific ticket by ID.
+        /// </summary>
+        [HttpPut]
+        [Route("api/tickets/{id:int}")]
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> Puttickets(int id, tickets tickets)
+        public async Task<IHttpActionResult> Puttickets(int id, tickets ticketData)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            if (id != tickets.id)
-            {
-                return BadRequest();
-            }
+            if (id != ticketData.id)
+                return BadRequest("ID mismatch.");
 
-            db.Entry(tickets).State = EntityState.Modified;
+            var existing = await db.tickets.FindAsync(id);
+            if (existing == null)
+                return NotFound();
+
+            existing.name = ticketData.name;
+            existing.reservation = ticketData.reservation;
+            existing.status = ticketData.status;
 
             try
             {
                 await db.SaveChangesAsync();
+                return StatusCode(HttpStatusCode.NoContent);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ticketsExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return InternalServerError();
             }
-
-            return StatusCode(HttpStatusCode.NoContent);
         }
 
         // POST: api/tickets
+        /// <summary>
+        /// Creates a new ticket.
+        /// </summary>
+        [HttpPost]
+        [Route("api/tickets")]
         [ResponseType(typeof(tickets))]
-        public async Task<IHttpActionResult> Posttickets(tickets tickets)
+        public async Task<IHttpActionResult> Posttickets(tickets ticket)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            db.tickets.Add(tickets);
+            db.tickets.Add(ticket);
             await db.SaveChangesAsync();
 
-            return CreatedAtRoute("DefaultApi", new { id = tickets.id }, tickets);
+            return CreatedAtRoute("DefaultApi", new { id = ticket.id }, ticket);
         }
 
-        // DELETE: api/tickets/5
+        // DELETE: api/tickets/{id}
+        /// <summary>
+        /// Deletes a specific ticket by ID.
+        /// </summary>
+        [HttpDelete]
+        [Route("api/tickets/{id:int}")]
         [ResponseType(typeof(tickets))]
         public async Task<IHttpActionResult> Deletetickets(int id)
         {
-            tickets tickets = await db.tickets.FindAsync(id);
-            if (tickets == null)
-            {
+            var ticket = await db.tickets.FindAsync(id);
+            if (ticket == null)
                 return NotFound();
-            }
 
-            db.tickets.Remove(tickets);
+            db.tickets.Remove(ticket);
             await db.SaveChangesAsync();
 
-            return Ok(tickets);
+            return Ok(ticket);
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
 
-        private bool ticketsExists(int id)
-        {
-            return db.tickets.Count(e => e.id == id) > 0;
+            base.Dispose(disposing);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http.Description;
 using WebApplicationEventology.Models;
 using System.Data.Entity.Infrastructure;
+using System.Collections.Generic;
 
 namespace WebApplicationEventology.Controllers
 {
@@ -14,102 +15,132 @@ namespace WebApplicationEventology.Controllers
         private eventologyEntities db = new eventologyEntities();
 
         // GET: api/incidences
-        public IQueryable<incidences> Getincidences()
+        /// <summary>
+        /// Gets all incidences (only main fields).
+        /// </summary>
+        [HttpGet]
+        [Route("api/incidences")]
+        [ResponseType(typeof(IEnumerable<object>))]
+        public async Task<IHttpActionResult> Getincidences()
         {
-            return db.incidences;
-        }
+            db.Configuration.LazyLoadingEnabled = false;
 
-        // GET: api/incidences/5
-        [ResponseType(typeof(incidences))]
-        public async Task<IHttpActionResult> Getincidences(int id)
-        {
-            incidences incidences = await db.incidences.FindAsync(id);
-            if (incidences == null)
-            {
-                return NotFound();
-            }
+            var incidences = await db.incidences
+                .Select(i => new
+                {
+                    i.id,
+                    i.reason,
+                    i.status
+                })
+                .ToListAsync();
 
             return Ok(incidences);
         }
 
-        // PUT: api/incidences/5
+        // GET: api/incidences/{id}
+        /// <summary>
+        /// Gets a specific incidence by ID (only main fields).
+        /// </summary>
+        [HttpGet]
+        [Route("api/incidences/{id:int}")]
+        [ResponseType(typeof(object))]
+        public async Task<IHttpActionResult> Getincidence(int id)
+        {
+            db.Configuration.LazyLoadingEnabled = false;
+
+            var incidence = await db.incidences
+                .Where(i => i.id == id)
+                .Select(i => new
+                {
+                    i.id,
+                    i.reason,
+                    i.status
+                })
+                .FirstOrDefaultAsync();
+
+            if (incidence == null)
+                return NotFound();
+
+            return Ok(incidence);
+        }
+
+        // PUT: api/incidences/{id}
+        /// <summary>
+        /// Updates a specific incidence by ID.
+        /// </summary>
+        [HttpPut]
+        [Route("api/incidences/{id:int}")]
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> Putincidences(int id, incidences incidences)
+        public async Task<IHttpActionResult> Putincidence(int id, incidences incidenceUpdate)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            if (id != incidences.id)
-            {
-                return BadRequest();
-            }
+            if (id != incidenceUpdate.id)
+                return BadRequest("ID mismatch.");
 
-            db.Entry(incidences).State = EntityState.Modified;
+            var existing = await db.incidences.FindAsync(id);
+            if (existing == null)
+                return NotFound();
+
+            existing.reason = incidenceUpdate.reason;
+            existing.status = incidenceUpdate.status;
+            existing.normal_user_id = incidenceUpdate.normal_user_id;
+            existing.solver_user_id = incidenceUpdate.solver_user_id;
 
             try
             {
                 await db.SaveChangesAsync();
+                return StatusCode(HttpStatusCode.NoContent);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!incidencesExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return InternalServerError();
             }
-
-            return StatusCode(HttpStatusCode.NoContent);
         }
 
         // POST: api/incidences
+        /// <summary>
+        /// Creates a new incidence.
+        /// </summary>
+        [HttpPost]
+        [Route("api/incidences")]
         [ResponseType(typeof(incidences))]
-        public async Task<IHttpActionResult> Postincidences(incidences incidences)
+        public async Task<IHttpActionResult> Postincidence(incidences newIncidence)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            db.incidences.Add(incidences);
+            db.incidences.Add(newIncidence);
             await db.SaveChangesAsync();
 
-            return CreatedAtRoute("DefaultApi", new { id = incidences.id }, incidences);
+            return CreatedAtRoute("DefaultApi", new { id = newIncidence.id }, newIncidence);
         }
 
-        // DELETE: api/incidences/5
+        // DELETE: api/incidences/{id}
+        /// <summary>
+        /// Deletes a specific incidence by ID.
+        /// </summary>
+        [HttpDelete]
+        [Route("api/incidences/{id:int}")]
         [ResponseType(typeof(incidences))]
-        public async Task<IHttpActionResult> Deleteincidences(int id)
+        public async Task<IHttpActionResult> Deleteincidence(int id)
         {
-            incidences incidences = await db.incidences.FindAsync(id);
-            if (incidences == null)
-            {
+            var incidence = await db.incidences.FindAsync(id);
+            if (incidence == null)
                 return NotFound();
-            }
 
-            db.incidences.Remove(incidences);
+            db.incidences.Remove(incidence);
             await db.SaveChangesAsync();
 
-            return Ok(incidences);
+            return Ok(incidence);
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 db.Dispose();
-            }
             base.Dispose(disposing);
-        }
-
-        private bool incidencesExists(int id)
-        {
-            return db.incidences.Count(e => e.id == id) > 0;
         }
     }
 }

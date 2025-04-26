@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http.Description;
 using WebApplicationEventology.Models;
 using System.Data.Entity.Infrastructure;
+using System.Collections.Generic;
 
 namespace WebApplicationEventology.Controllers
 {
@@ -14,102 +15,134 @@ namespace WebApplicationEventology.Controllers
         private eventologyEntities db = new eventologyEntities();
 
         // GET: api/rooms
-        public IQueryable<rooms> Getrooms()
+        /// <summary>
+        /// Gets all rooms (only main fields).
+        /// </summary>
+        [HttpGet]
+        [Route("api/rooms")]
+        [ResponseType(typeof(IEnumerable<object>))]
+        public async Task<IHttpActionResult> Getrooms()
         {
-            return db.rooms;
-        }
+            db.Configuration.LazyLoadingEnabled = false;
 
-        // GET: api/rooms/5
-        [ResponseType(typeof(rooms))]
-        public async Task<IHttpActionResult> Getrooms(int id)
-        {
-            rooms rooms = await db.rooms.FindAsync(id);
-            if (rooms == null)
-            {
-                return NotFound();
-            }
+            var rooms = await db.rooms
+                .Select(r => new
+                {
+                    r.id,
+                    r.name,
+                    r.capacity,
+                    r.description
+                })
+                .ToListAsync();
 
             return Ok(rooms);
         }
 
-        // PUT: api/rooms/5
+        // GET: api/rooms/{id}
+        /// <summary>
+        /// Gets a specific room by ID (only main fields).
+        /// </summary>
+        [HttpGet]
+        [Route("api/rooms/{id:int}")]
+        [ResponseType(typeof(object))]
+        public async Task<IHttpActionResult> Getrooms(int id)
+        {
+            db.Configuration.LazyLoadingEnabled = false;
+
+            var room = await db.rooms
+                .Where(r => r.id == id)
+                .Select(r => new
+                {
+                    r.id,
+                    r.name,
+                    r.capacity,
+                    r.description
+                })
+                .FirstOrDefaultAsync();
+
+            if (room == null)
+                return NotFound();
+
+            return Ok(room);
+        }
+
+        // PUT: api/rooms/{id}
+        /// <summary>
+        /// Updates a specific room by ID.
+        /// </summary>
+        [HttpPut]
+        [Route("api/rooms/{id:int}")]
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> Putrooms(int id, rooms rooms)
+        public async Task<IHttpActionResult> Putrooms(int id, rooms roomData)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            if (id != rooms.id)
-            {
-                return BadRequest();
-            }
+            if (id != roomData.id)
+                return BadRequest("ID mismatch.");
 
-            db.Entry(rooms).State = EntityState.Modified;
+            var existing = await db.rooms.FindAsync(id);
+            if (existing == null)
+                return NotFound();
+
+            existing.name = roomData.name;
+            existing.capacity = roomData.capacity;
+            existing.description = roomData.description;
 
             try
             {
                 await db.SaveChangesAsync();
+                return StatusCode(HttpStatusCode.NoContent);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!roomsExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return InternalServerError();
             }
-
-            return StatusCode(HttpStatusCode.NoContent);
         }
 
         // POST: api/rooms
+        /// <summary>
+        /// Creates a new room.
+        /// </summary>
+        [HttpPost]
+        [Route("api/rooms")]
         [ResponseType(typeof(rooms))]
-        public async Task<IHttpActionResult> Postrooms(rooms rooms)
+        public async Task<IHttpActionResult> Postrooms(rooms room)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            db.rooms.Add(rooms);
+            db.rooms.Add(room);
             await db.SaveChangesAsync();
 
-            return CreatedAtRoute("DefaultApi", new { id = rooms.id }, rooms);
+            return CreatedAtRoute("DefaultApi", new { id = room.id }, room);
         }
 
-        // DELETE: api/rooms/5
+        // DELETE: api/rooms/{id}
+        /// <summary>
+        /// Deletes a specific room by ID.
+        /// </summary>
+        [HttpDelete]
+        [Route("api/rooms/{id:int}")]
         [ResponseType(typeof(rooms))]
         public async Task<IHttpActionResult> Deleterooms(int id)
         {
-            rooms rooms = await db.rooms.FindAsync(id);
-            if (rooms == null)
-            {
+            var room = await db.rooms.FindAsync(id);
+            if (room == null)
                 return NotFound();
-            }
 
-            db.rooms.Remove(rooms);
+            db.rooms.Remove(room);
             await db.SaveChangesAsync();
 
-            return Ok(rooms);
+            return Ok(room);
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
 
-        private bool roomsExists(int id)
-        {
-            return db.rooms.Count(e => e.id == id) > 0;
+            base.Dispose(disposing);
         }
     }
 }

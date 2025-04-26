@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http.Description;
 using WebApplicationEventology.Models;
 using System.Data.Entity.Infrastructure;
+using System.Collections.Generic;
 
 namespace WebApplicationEventology.Controllers
 {
@@ -14,117 +15,133 @@ namespace WebApplicationEventology.Controllers
         private eventologyEntities db = new eventologyEntities();
 
         // GET: api/inventory_rooms
-        public IQueryable<inventory_rooms> Getinventory_rooms()
+        /// <summary>
+        /// Gets all inventory-room associations (only main fields).
+        /// </summary>
+        [HttpGet]
+        [Route("api/inventory_rooms")]
+        [ResponseType(typeof(IEnumerable<object>))]
+        public async Task<IHttpActionResult> Getinventory_rooms()
         {
-            return db.inventory_rooms;
+            db.Configuration.LazyLoadingEnabled = false;
+
+            var inventoryRooms = await db.inventory_rooms
+                .Select(ir => new
+                {
+                    ir.room_id,
+                    ir.inventory_id,
+                    ir.quantity
+                })
+                .ToListAsync();
+
+            return Ok(inventoryRooms);
         }
 
-        // GET: api/inventory_rooms/5
-        [ResponseType(typeof(inventory_rooms))]
-        public async Task<IHttpActionResult> Getinventory_rooms(int id)
+        // GET: api/inventory_rooms/{roomId}/{inventoryId}
+        /// <summary>
+        /// Gets a specific inventory-room association by composite keys.
+        /// </summary>
+        [HttpGet]
+        [Route("api/inventory_rooms/{roomId:int}/{inventoryId:int}")]
+        [ResponseType(typeof(object))]
+        public async Task<IHttpActionResult> Getinventory_room(int roomId, int inventoryId)
         {
-            inventory_rooms inventory_rooms = await db.inventory_rooms.FindAsync(id);
-            if (inventory_rooms == null)
-            {
+            db.Configuration.LazyLoadingEnabled = false;
+
+            var inventoryRoom = await db.inventory_rooms
+                .Where(ir => ir.room_id == roomId && ir.inventory_id == inventoryId)
+                .Select(ir => new
+                {
+                    ir.room_id,
+                    ir.inventory_id,
+                    ir.quantity
+                })
+                .FirstOrDefaultAsync();
+
+            if (inventoryRoom == null)
                 return NotFound();
-            }
 
-            return Ok(inventory_rooms);
+            return Ok(inventoryRoom);
         }
 
-        // PUT: api/inventory_rooms/5
+        // PUT: api/inventory_rooms/{roomId}/{inventoryId}
+        /// <summary>
+        /// Updates a specific inventory-room association by composite keys.
+        /// </summary>
+        [HttpPut]
+        [Route("api/inventory_rooms/{roomId:int}/{inventoryId:int}")]
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> Putinventory_rooms(int id, inventory_rooms inventory_rooms)
+        public async Task<IHttpActionResult> Putinventory_room(int roomId, int inventoryId, inventory_rooms inventoryRoomData)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            if (id != inventory_rooms.room_id)
-            {
-                return BadRequest();
-            }
+            if (roomId != inventoryRoomData.room_id || inventoryId != inventoryRoomData.inventory_id)
+                return BadRequest("Composite ID mismatch.");
 
-            db.Entry(inventory_rooms).State = EntityState.Modified;
+            var existing = await db.inventory_rooms.FindAsync(roomId, inventoryId);
+            if (existing == null)
+                return NotFound();
+
+            existing.quantity = inventoryRoomData.quantity;
 
             try
             {
                 await db.SaveChangesAsync();
+                return StatusCode(HttpStatusCode.NoContent);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!inventory_roomsExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return InternalServerError();
             }
-
-            return StatusCode(HttpStatusCode.NoContent);
         }
 
         // POST: api/inventory_rooms
+        /// <summary>
+        /// Creates a new inventory-room association.
+        /// </summary>
+        [HttpPost]
+        [Route("api/inventory_rooms")]
         [ResponseType(typeof(inventory_rooms))]
-        public async Task<IHttpActionResult> Postinventory_rooms(inventory_rooms inventory_rooms)
+        public async Task<IHttpActionResult> Postinventory_room(inventory_rooms inventoryRoom)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            db.inventory_rooms.Add(inventory_rooms);
+            var exists = await db.inventory_rooms.FindAsync(inventoryRoom.room_id, inventoryRoom.inventory_id);
+            if (exists != null)
+                return Conflict();
 
-            try
-            {
-                await db.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (inventory_roomsExists(inventory_rooms.room_id))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtRoute("DefaultApi", new { id = inventory_rooms.room_id }, inventory_rooms);
-        }
-
-        // DELETE: api/inventory_rooms/5
-        [ResponseType(typeof(inventory_rooms))]
-        public async Task<IHttpActionResult> Deleteinventory_rooms(int id)
-        {
-            inventory_rooms inventory_rooms = await db.inventory_rooms.FindAsync(id);
-            if (inventory_rooms == null)
-            {
-                return NotFound();
-            }
-
-            db.inventory_rooms.Remove(inventory_rooms);
+            db.inventory_rooms.Add(inventoryRoom);
             await db.SaveChangesAsync();
 
-            return Ok(inventory_rooms);
+            return CreatedAtRoute("DefaultApi", new { room_id = inventoryRoom.room_id, inventory_id = inventoryRoom.inventory_id }, inventoryRoom);
+        }
+
+        // DELETE: api/inventory_rooms/{roomId}/{inventoryId}
+        /// <summary>
+        /// Deletes a specific inventory-room association by composite keys.
+        /// </summary>
+        [HttpDelete]
+        [Route("api/inventory_rooms/{roomId:int}/{inventoryId:int}")]
+        [ResponseType(typeof(inventory_rooms))]
+        public async Task<IHttpActionResult> Deleteinventory_room(int roomId, int inventoryId)
+        {
+            var inventoryRoom = await db.inventory_rooms.FindAsync(roomId, inventoryId);
+            if (inventoryRoom == null)
+                return NotFound();
+
+            db.inventory_rooms.Remove(inventoryRoom);
+            await db.SaveChangesAsync();
+
+            return Ok(inventoryRoom);
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 db.Dispose();
-            }
             base.Dispose(disposing);
-        }
-
-        private bool inventory_roomsExists(int id)
-        {
-            return db.inventory_rooms.Count(e => e.room_id == id) > 0;
         }
     }
 }
