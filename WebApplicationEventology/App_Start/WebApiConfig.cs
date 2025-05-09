@@ -9,7 +9,12 @@ namespace WebApplicationEventology
     {
         public static void Register(HttpConfiguration config)
         {
-            // Configuración y servicios de Web API
+            // Configure api to return data in json format
+            config.Formatters.Remove(config.Formatters.XmlFormatter);
+            var json = GlobalConfiguration.Configuration.Formatters.JsonFormatter;
+            json.SerializerSettings.PreserveReferencesHandling =
+                Newtonsoft.Json.PreserveReferencesHandling.None;
+            json.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 
             // Rutas de Web API
             config.MapHttpAttributeRoutes();
