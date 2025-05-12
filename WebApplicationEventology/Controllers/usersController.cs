@@ -78,6 +78,72 @@ namespace WebApplicationEventology.Controllers
         }
 
         /// <summary>
+        /// Authenticates a user and provides a JSON Web Token (JWT) upon successful login.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint accepts user credentials (email and password) and verifies them
+        /// against stored user data. If the credentials are valid, a JWT is generated
+        /// and returned for subsequent authenticated requests.
+        /// </remarks>
+        /// <param name="request">
+        /// An object containing the user's login credentials: Email and Password.
+        /// </param>
+        /// <returns>
+        /// <para>
+        /// If authentication is successful, returns an OK (200) with the generated JWT string
+        /// in the response body.
+        /// </para>
+        /// <para>
+        /// If the provided <paramref name="request"/> fails model validation, returns a BadRequest (400)
+        /// with details about the validation errors in the ModelState.
+        /// </para>
+        /// <para>
+        /// If the email and password do not match a registered user, returns an Unauthorized (401)
+        /// with a message indicating invalid credentials.
+        /// </para>
+        /// <para>
+        /// If an unexpected error occurs during the process (e.g., database connection issues),
+        /// returns a BadRequest (400) with a string representation of the exception details.
+        /// </para>
+        /// </returns>
+        [HttpPost]
+        [Route("api/user/login")]
+        public async Task<IHttpActionResult> Login([FromBody] RequestLogin request)
+        {
+            try
+            {
+                // Check if the incoming request data is valid
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                // Find the user by email
+                var user = await db.users.FirstOrDefaultAsync(u => u.email == request.Email);
+
+                // If user is not found or password doesn't match
+                if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.password))
+                {
+                    // Return Unauthorized for invalid credentials
+                    return Unauthorized();
+                }
+
+                // Generate JWT for the authenticated user
+                var jwt = JwtUtils.GenerateUserJwt(user);
+
+                // Return the JWT in an OK response
+                return Ok(jwt);
+            }
+            catch (Exception e)
+            {
+                // Log the exception (recommended in a real application)
+                // Return a generic BadRequest for unexpected server errors
+                return BadRequest($"An error occurred during login: {e.Message}"); // Provide a more user-friendly message
+                                                                                   // Or return BadRequest(e.ToString()); for full error details (less secure for production)
+            }
+        }
+
+        /// <summary>
         /// Gets the details of the currently authenticated user.
         /// </summary>
         /// <remarks>

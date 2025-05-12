@@ -263,6 +263,7 @@
     <Compile Include="Controllers\inventory_roomsController.cs" />
     <Compile Include="Controllers\mediaController.cs" />
     <Compile Include="Controllers\Requests\RequestCreateUser.cs" />
+    <Compile Include="Controllers\Requests\RequestLogin.cs" />
     <Compile Include="Controllers\roomsController.cs" />
     <Compile Include="Controllers\seatsController.cs" />
     <Compile Include="Controllers\ticketsController.cs" />
