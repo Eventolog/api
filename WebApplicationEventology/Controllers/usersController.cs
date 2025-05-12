@@ -17,6 +17,7 @@ namespace WebApplicationEventology.Controllers
         private eventologyEntities db = new eventologyEntities();
 
 
+        // POST: api/user/signup
         /// <summary>
         /// Creates a new user in the system.
         /// </summary>
@@ -45,15 +46,17 @@ namespace WebApplicationEventology.Controllers
         [Route("api/user/signup")]
         public async Task<IHttpActionResult> CreateUser([FromBody] RequestCreateUser request)
         {
-            try { 
+            try {
+                // Check if the incoming request data is valid
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
 
+                // Encrypt the password
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-
+                // Create the user instance
                 users user = new users
                 {
                     name = request.Name,
@@ -65,8 +68,10 @@ namespace WebApplicationEventology.Controllers
                 db.users.Add(user);
                 await db.SaveChangesAsync();
 
+                // Generate JWT for the created uer
                 var jwt = JwtUtils.GenerateUserJwt(user);
 
+                // Return the JWT in an OK response
                 return Ok(jwt);
             }
             catch (Exception e)
@@ -75,6 +80,7 @@ namespace WebApplicationEventology.Controllers
             }
         }
 
+        // POST: api/user/login
         /// <summary>
         /// Authenticates a user and provides a JSON Web Token (JWT) upon successful login.
         /// </summary>
@@ -134,13 +140,11 @@ namespace WebApplicationEventology.Controllers
             }
             catch (Exception e)
             {
-                // Log the exception (recommended in a real application)
-                // Return a generic BadRequest for unexpected server errors
-                return BadRequest($"An error occurred during login: {e.Message}"); // Provide a more user-friendly message
-                                                                                   // Or return BadRequest(e.ToString()); for full error details (less secure for production)
+                return BadRequest(e.ToString());
             }
         }
 
+        // GET: api/user/whoami
         /// <summary>
         /// Gets the details of the currently authenticated user.
         /// </summary>
