@@ -10,6 +10,7 @@ using System.Data.Entity.Infrastructure;
 using WebApplicationEventology.Controllers.Requests;
 using WebApplicationEventology.Utils;
 using WebApplicationEventology.Constants;
+using GigFinder.Attributes;
 
 namespace WebApplicationEventology.Controllers
 {
@@ -17,10 +18,31 @@ namespace WebApplicationEventology.Controllers
     {
         private eventologyEntities db = new eventologyEntities();
 
-        // POST: api/users
+
         /// <summary>
-        /// Creates a new user.
+        /// Creates a new user in the system.
         /// </summary>
+        /// <remarks>
+        /// This endpoint accepts user details and creates a new user account with a hashed password.
+        /// Upon successful creation, a JWT is generated for the new user.
+        /// </remarks>
+        /// <param name="request">
+        /// An object containing the details for the new user, including Name, Email, and Password.
+        /// The password will be securely hashed before storage.
+        /// </param>
+        /// <returns>
+        /// <para>
+        /// If the user is created successfully, returns an OK (200) with the generated JWT string in the response body.
+        /// </para>
+        /// <para>
+        /// If the provided <paramref name="request"/> fails model validation, returns a BadRequest (400)
+        /// with details about the validation errors in the ModelState.
+        /// </para>
+        /// <para>
+        /// If an unexpected error occurs during the process (e.g., database error, hashing failure),
+        /// returns a BadRequest (400) with a string representation of the exception details.
+        /// </para>
+        /// </returns>
         [HttpPost]
         [Route("api/user/add")]
         public async Task<IHttpActionResult> CreateUser([FromBody] RequestCreateUser request)
@@ -55,35 +77,40 @@ namespace WebApplicationEventology.Controllers
             }
         }
 
-        //// GET: api/users
-        ///// <summary>
-        ///// Gets all users (only main fields).
-        ///// </summary>
-        //[HttpGet]
-        //[Route("api/users")]
-        //[ResponseType(typeof(IEnumerable<object>))]
-        //public async Task<IHttpActionResult> Getusers()
-        //{
-        //    db.Configuration.LazyLoadingEnabled = false;
+        /// <summary>
+        /// Gets the details of the currently authenticated user.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint requires authentication via the [ProtectedUser] attribute.
+        /// </remarks>
+        /// <returns>
+        /// An IHttpActionResult containing an OK response with an anonymous object
+        /// representing the authenticated user's essential information (id, name, type).
+        /// </returns>
+        [HttpGet]
+        [Route("api/user/whoami")]
+        [ProtectedUser]
+        public async Task<IHttpActionResult> WhoAmI()
+        {
+            users user = UserUtils.GetCurrentUser();
 
-        //    var users = await db.users
-        //        .Select(u => new
-        //        {
-        //            u.id,
-        //            u.name,
-        //            u.email,
-        //            u.password,
-        //            u.type
-        //        })
-        //        .ToListAsync();
+            return Ok(new
+            {
+                id = user.id,
+                name = user.name,
+                type = user.type,
+            });
+        }
 
-        //    return Ok(users);
-        //}
 
         // GET: api/users/{id}
         /// <summary>
         /// Gets a specific user by ID (only main fields).
         /// </summary>
+        /// <returns>
+        /// An IHttpActionResult containing an OK response with an anonymous object
+        /// representing the authenticated user's essential information (id, name, type).
+        /// </returns>
         [HttpGet]
         [Route("api/users/{id:int}")]
         [ResponseType(typeof(object))]
@@ -98,7 +125,6 @@ namespace WebApplicationEventology.Controllers
                     u.id,
                     u.name,
                     u.email,
-                    u.password,
                     u.type
                 })
                 .FirstOrDefaultAsync();
@@ -109,84 +135,5 @@ namespace WebApplicationEventology.Controllers
             return Ok(user);
         }
 
-        // PUT: api/users/{id}
-        /// <summary>
-        /// Updates a specific user by ID.
-        /// </summary>
-        [HttpPut]
-        [Route("api/users/{id:int}")]
-        [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> Putusers(int id, users userData)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (id != userData.id)
-                return BadRequest("ID mismatch.");
-
-            var existing = await db.users.FindAsync(id);
-            if (existing == null)
-                return NotFound();
-
-            existing.name = userData.name;
-            existing.email = userData.email;
-            existing.password = userData.password;
-            existing.type = userData.type;
-
-            try
-            {
-                await db.SaveChangesAsync();
-                return StatusCode(HttpStatusCode.NoContent);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return InternalServerError();
-            }
-        }
-
-        // POST: api/users
-        /// <summary>
-        /// Creates a new user.
-        /// </summary>
-        [HttpPost]
-        [Route("api/users")]
-        [ResponseType(typeof(users))]
-        public async Task<IHttpActionResult> Postusers(users user)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            db.users.Add(user);
-            await db.SaveChangesAsync();
-
-            return CreatedAtRoute("DefaultApi", new { id = user.id }, user);
-        }
-
-        // DELETE: api/users/{id}
-        /// <summary>
-        /// Deletes a specific user by ID.
-        /// </summary>
-        [HttpDelete]
-        [Route("api/users/{id:int}")]
-        [ResponseType(typeof(users))]
-        public async Task<IHttpActionResult> Deleteusers(int id)
-        {
-            var user = await db.users.FindAsync(id);
-            if (user == null)
-                return NotFound();
-
-            db.users.Remove(user);
-            await db.SaveChangesAsync();
-
-            return Ok(user);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-                db.Dispose();
-
-            base.Dispose(disposing);
-        }
     }
 }
