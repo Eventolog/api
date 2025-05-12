@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Linq;
 using System.Web.Http;
 using System.Data.Entity;
@@ -6,7 +7,9 @@ using System.Threading.Tasks;
 using System.Web.Http.Description;
 using WebApplicationEventology.Models;
 using System.Data.Entity.Infrastructure;
-using System.Collections.Generic;
+using WebApplicationEventology.Controllers.Requests;
+using WebApplicationEventology.Utils;
+using WebApplicationEventology.Constants;
 
 namespace WebApplicationEventology.Controllers
 {
@@ -14,30 +17,68 @@ namespace WebApplicationEventology.Controllers
     {
         private eventologyEntities db = new eventologyEntities();
 
-        // GET: api/users
+        // POST: api/users
         /// <summary>
-        /// Gets all users (only main fields).
+        /// Creates a new user.
         /// </summary>
-        [HttpGet]
-        [Route("api/users")]
-        [ResponseType(typeof(IEnumerable<object>))]
-        public async Task<IHttpActionResult> Getusers()
+        [HttpPost]
+        [Route("api/user/add")]
+        public async Task<IHttpActionResult> CreateUser([FromBody] RequestCreateUser request)
         {
-            db.Configuration.LazyLoadingEnabled = false;
-
-            var users = await db.users
-                .Select(u => new
+            try { 
+                if (!ModelState.IsValid)
                 {
-                    u.id,
-                    u.name,
-                    u.email,
-                    u.password,
-                    u.type
-                })
-                .ToListAsync();
+                    return BadRequest(ModelState);
+                }
 
-            return Ok(users);
+                var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+
+                users user = new users
+                {
+                    name = request.Name,
+                    email = request.Email,
+                    password = hashedPassword,
+                    type = UserTypes.NORMAL
+                };
+
+                db.users.Add(user);
+                await db.SaveChangesAsync();
+
+                var jwt = JwtUtils.GenerateUserJwt(user);
+
+                return Ok(jwt);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.ToString());
+            }
         }
+
+        //// GET: api/users
+        ///// <summary>
+        ///// Gets all users (only main fields).
+        ///// </summary>
+        //[HttpGet]
+        //[Route("api/users")]
+        //[ResponseType(typeof(IEnumerable<object>))]
+        //public async Task<IHttpActionResult> Getusers()
+        //{
+        //    db.Configuration.LazyLoadingEnabled = false;
+
+        //    var users = await db.users
+        //        .Select(u => new
+        //        {
+        //            u.id,
+        //            u.name,
+        //            u.email,
+        //            u.password,
+        //            u.type
+        //        })
+        //        .ToListAsync();
+
+        //    return Ok(users);
+        //}
 
         // GET: api/users/{id}
         /// <summary>
