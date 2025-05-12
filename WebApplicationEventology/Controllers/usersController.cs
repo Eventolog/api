@@ -44,7 +44,7 @@ namespace WebApplicationEventology.Controllers
         /// </para>
         /// </returns>
         [HttpPost]
-        [Route("api/user/add")]
+        [Route("api/user/signup")]
         public async Task<IHttpActionResult> CreateUser([FromBody] RequestCreateUser request)
         {
             try { 

@@ -2,6 +2,14 @@
 
 namespace WebApplicationEventology.Controllers.Requests
 {
+
+    /// <summary>
+    /// Represents the data expected in the body of a user signup request.
+    /// </summary>
+    /// <remarks>
+    /// This class is used to deserialize the JSON payload sent to the user signup endpoint,
+    /// containing the name and credentials required for authentication.
+    /// </remarks>
     public class RequestCreateUser
     {
         [Required(ErrorMessage = "Name is required.")]
