@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="eventologyModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="eventologyModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="chatrooms">
           <Key>
             <PropertyRef Name="id" />
@@ -89,6 +89,9 @@
           <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="name" Type="nvarchar" MaxLength="100" Nullable="false" />
           <Property Name="capacity" Type="int" />
+          <Property Name="hasSeatingDistribution" Type="bit" Nullable="false" />
+          <Property Name="roomLayout" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="deleted" Type="bit" />
           <Property Name="description" Type="nvarchar" MaxLength="500" />
         </EntityType>
         <EntityType Name="seats">
@@ -432,8 +435,7 @@
             <End Role="tickets" EntitySet="tickets" />
           </AssociationSet>
         </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="eventologyModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -533,6 +535,9 @@
           <NavigationProperty Name="events" Relationship="Self.fk_events_room" FromRole="rooms" ToRole="events" />
           <NavigationProperty Name="inventory_rooms" Relationship="Self.fk_inventory_rooms" FromRole="rooms" ToRole="inventory_rooms" />
           <NavigationProperty Name="seats" Relationship="Self.fk_seats_room" FromRole="rooms" ToRole="seats" />
+          <Property Name="hasSeatingDistribution" Type="Boolean" Nullable="false" />
+          <Property Name="roomLayout" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="deleted" Type="Boolean" />
         </EntityType>
         <EntityType Name="seats">
           <Key>
@@ -945,6 +950,9 @@
           <EntitySetMapping Name="rooms">
             <EntityTypeMapping TypeName="eventologyModel.rooms">
               <MappingFragment StoreEntitySet="rooms">
+                <ScalarProperty Name="deleted" ColumnName="deleted" />
+                <ScalarProperty Name="roomLayout" ColumnName="roomLayout" />
+                <ScalarProperty Name="hasSeatingDistribution" ColumnName="hasSeatingDistribution" />
                 <ScalarProperty Name="id" ColumnName="id" />
                 <ScalarProperty Name="name" ColumnName="name" />
                 <ScalarProperty Name="capacity" ColumnName="capacity" />
