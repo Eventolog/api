@@ -259,14 +259,10 @@
     <Compile Include="Controllers\eventsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\incidencesController.cs" />
-    <Compile Include="Controllers\inventory_itemsController.cs" />
-    <Compile Include="Controllers\inventory_roomsController.cs" />
     <Compile Include="Controllers\Requests\RequestCreateNewIncidence.cs" />
     <Compile Include="Controllers\Requests\RequestCreateUser.cs" />
     <Compile Include="Controllers\Requests\RequestLogin.cs" />
     <Compile Include="Controllers\roomsController.cs" />
-    <Compile Include="Controllers\seatsController.cs" />
-    <Compile Include="Controllers\ticketsController.cs" />
     <Compile Include="Controllers\usersController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

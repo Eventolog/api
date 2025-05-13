@@ -6,7 +6,7 @@
     <edmx:Diagrams>
       <Diagram DiagramId="6dce16bdf25e48028930ba1b0ab35781" Name="Diagram1">
         <EntityTypeShape EntityType="eventologyModel.chatrooms" Width="1.5" PointX="3" PointY="4.875" IsExpanded="true" />
-        <EntityTypeShape EntityType="eventologyModel.events" Width="1.5" PointX="6" PointY="9.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="eventologyModel.events" Width="1.5" PointX="2.875" PointY="8.125" IsExpanded="true" />
         <EntityTypeShape EntityType="eventologyModel.incidences" Width="1.5" PointX="3" PointY="12.25" IsExpanded="true" />
         <EntityTypeShape EntityType="eventologyModel.inventory_items" Width="1.5" PointX="3.75" PointY="19.75" IsExpanded="true" />
         <EntityTypeShape EntityType="eventologyModel.inventory_rooms" Width="1.5" PointX="6" PointY="16.625" IsExpanded="true" />
