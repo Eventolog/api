@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Linq;
+﻿using System.Linq;
 using System.Web.Http;
 using System.Data.Entity;
 using System.Threading.Tasks;
@@ -12,14 +11,17 @@ using System;
 
 namespace WebApplicationEventology.Controllers
 {
+    /// <summary>
+    /// Controller that manages event-related operations including listing events, retrieving free seats, and booking them.
+    /// </summary>
     public class eventsController : ApiController
     {
         private eventologyEntities db = new eventologyEntities();
 
-        // GET: api/events
         /// <summary>
-        /// Gets all events with only local table fields (no foreign keys).
+        /// Retrieves all events with relevant room details (excluding navigation properties like users or tickets).
         /// </summary>
+        /// <returns>Returns a list of event objects with basic and room information.</returns>
         [HttpGet]
         [Route("api/events")]
         [ResponseType(typeof(IEnumerable<object>))]
@@ -48,6 +50,11 @@ namespace WebApplicationEventology.Controllers
             return Ok(events);
         }
 
+        /// <summary>
+        /// Gets all available (not reserved) seats for a given event.
+        /// </summary>
+        /// <param name="eventId">ID of the event.</param>
+        /// <returns>Returns a list of seats that are not currently reserved for the specified event.</returns>
         [HttpGet]
         [Route("api/{eventId}/getFreeSeats")]
         [ProtectedUser]
@@ -56,7 +63,6 @@ namespace WebApplicationEventology.Controllers
         {
             db.Configuration.LazyLoadingEnabled = false;
 
-            // Obtenir totes les butaques de la sala de l’esdeveniment
             var eventEntity = await db.events.FindAsync(eventId);
             if (eventEntity == null)
                 return NotFound();
@@ -65,7 +71,6 @@ namespace WebApplicationEventology.Controllers
                 .Where(s => s.room_id == eventEntity.room_id)
                 .ToListAsync();
 
-            // Obtenir IDs de les butaques ja reservades per aquest event
             var takenSeatIds = await db.tickets
                 .Where(t => t.event_id == eventId && t.seat_id != null)
                 .Select(t => t.seat_id.Value)
@@ -84,16 +89,21 @@ namespace WebApplicationEventology.Controllers
             return Ok(freeSeats);
         }
 
+        /// <summary>
+        /// Books a specific seat for the authenticated user for a given event.
+        /// </summary>
+        /// <param name="eventId">ID of the event for which the seat is to be booked.</param>
+        /// <param name="seatId">ID of the seat to book.</param>
+        /// <returns>Returns the ticket ID if booking is successful.</returns>
         [HttpPost]
         [Route("api/{eventId}/bookSeat")]
         [ProtectedUser]
         [ResponseType(typeof(object))]
-        public async Task<IHttpActionResult> PostSeat(int eventId, [FromBody] int seatId)
+        public async Task<IHttpActionResult> bookSeat(int eventId, [FromBody] int seatId)
         {
             db.Configuration.LazyLoadingEnabled = false;
             var user = WebApplicationEventology.Utils.UserUtils.GetCurrentUser();
 
-            // Validacions bàsiques
             var eventEntity = await db.events.FindAsync(eventId);
             if (eventEntity == null)
                 return NotFound();
@@ -102,12 +112,10 @@ namespace WebApplicationEventology.Controllers
             if (seat == null || seat.room_id != eventEntity.room_id)
                 return BadRequest("Invalid seat for this event.");
 
-            // Comprovar si la butaca ja està agafada
             var isTaken = await db.tickets.AnyAsync(t => t.event_id == eventId && t.seat_id == seatId);
             if (isTaken)
                 return BadRequest("Seat already taken.");
 
-            // Crear la reserva
             var ticket = new tickets
             {
                 name = "Reserva amb seient",
