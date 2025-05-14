@@ -262,6 +262,7 @@
     <Compile Include="Controllers\Requests\RequestCreateNewIncidence.cs" />
     <Compile Include="Controllers\Requests\RequestCreateUser.cs" />
     <Compile Include="Controllers\Requests\RequestLogin.cs" />
+    <Compile Include="Controllers\ticketsController.cs" />
     <Compile Include="Controllers\roomsController.cs" />
     <Compile Include="Controllers\usersController.cs" />
     <Compile Include="Global.asax.cs">
