@@ -1,11 +1,9 @@
-﻿using System.Net;
-using System.Linq;
+﻿using System.Linq;
 using System.Web.Http;
 using System.Data.Entity;
 using System.Threading.Tasks;
 using System.Web.Http.Description;
 using WebApplicationEventology.Models;
-using System.Data.Entity.Infrastructure;
 using System.Collections.Generic;
 
 namespace WebApplicationEventology.Controllers
