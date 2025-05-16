@@ -8,6 +8,8 @@ using System.Web.Http.Description;
 using WebApplicationEventology.Models;
 using System.Data.Entity.Infrastructure;
 using WebApplicationEventology.Attributes;
+using WebApplicationEventology.Controllers.Requests;
+using WebApplicationEventology.Utils;
 
 namespace WebApplicationEventology.Controllers
 {
@@ -53,13 +55,13 @@ namespace WebApplicationEventology.Controllers
         /// <summary>
         /// Gets all available (not reserved) seats for a given event.
         /// </summary>
-        /// <param name="eventId">ID of the event.</param>
-        /// <returns>Returns a list of seats that are not currently reserved for the specified event.</returns>
+        /// <param name="eventId">The ID of the event.</param>
+        /// <returns>Returns a list of available seat objects.</returns>
         [HttpGet]
-        [Route("api/{eventId}/getFreeSeats")]
+        [Route("api/events/getFreeSeats")]
         [ProtectedUser]
         [ResponseType(typeof(IEnumerable<object>))]
-        public async Task<IHttpActionResult> GetFreeSeatsById(int eventId)
+        public async Task<IHttpActionResult> GetFreeSeats([FromUri] int eventId)
         {
             db.Configuration.LazyLoadingEnabled = false;
 
@@ -90,29 +92,28 @@ namespace WebApplicationEventology.Controllers
         }
 
         /// <summary>
-        /// Books a specific seat for the authenticated user for a given event.
+        /// Books a specific seat for the authenticated user.
         /// </summary>
-        /// <param name="eventId">ID of the event for which the seat is to be booked.</param>
-        /// <param name="seatId">ID of the seat to book.</param>
-        /// <returns>Returns the ticket ID if booking is successful.</returns>
+        /// <param name="booking">Object with eventId and seatId.</param>
+        /// <returns>Returns ticket ID if successful.</returns>
         [HttpPost]
-        [Route("api/{eventId}/bookSeat")]
+        [Route("api/events/bookSeat")]
         [ProtectedUser]
         [ResponseType(typeof(object))]
-        public async Task<IHttpActionResult> bookSeat(int eventId, [FromBody] int seatId)
+        public async Task<IHttpActionResult> BookSeat([FromBody] RequestBookSeat booking)
         {
             db.Configuration.LazyLoadingEnabled = false;
-            var user = WebApplicationEventology.Utils.UserUtils.GetCurrentUser();
+            var user = UserUtils.GetCurrentUser();
 
-            var eventEntity = await db.events.FindAsync(eventId);
+            var eventEntity = await db.events.FindAsync(booking.EventId);
             if (eventEntity == null)
                 return NotFound();
 
-            var seat = await db.seats.FindAsync(seatId);
+            var seat = await db.seats.FindAsync(booking.SeatId);
             if (seat == null || seat.room_id != eventEntity.room_id)
                 return BadRequest("Invalid seat for this event.");
 
-            var isTaken = await db.tickets.AnyAsync(t => t.event_id == eventId && t.seat_id == seatId);
+            var isTaken = await db.tickets.AnyAsync(t => t.event_id == booking.EventId && t.seat_id == booking.SeatId);
             if (isTaken)
                 return BadRequest("Seat already taken.");
 
@@ -122,8 +123,8 @@ namespace WebApplicationEventology.Controllers
                 reservation = DateTime.Now,
                 status = "reserved",
                 buyer_id = user.id,
-                event_id = eventId,
-                seat_id = seatId
+                event_id = booking.EventId,
+                seat_id = booking.SeatId
             };
 
             db.tickets.Add(ticket);

@@ -256,6 +256,7 @@
     <Compile Include="Controllers\eventsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\incidencesController.cs" />
+    <Compile Include="Controllers\Requests\RequestBookSeat.cs" />
     <Compile Include="Controllers\Requests\RequestCreateNewIncidence.cs" />
     <Compile Include="Controllers\Requests\RequestCreateUser.cs" />
     <Compile Include="Controllers\Requests\RequestLogin.cs" />
